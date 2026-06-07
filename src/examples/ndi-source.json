@@ -1,0 +1,6 @@
+{
+  "name": "NDI Source",
+  "type": "ndi",
+  "source_name": "STUDIO-CAM-1",
+  "bandwidth": "highest"
+}

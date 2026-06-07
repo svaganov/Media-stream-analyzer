@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Media Stream Analyzer — SRT Full Mockup</title>
+<style>
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: #1a1a24;
+  --bg-hover: #222230;
+  --border: #2a2a3a;
+  --text-primary: #e0e0e0;
+  --text-secondary: #9090a0;
+  --accent: #00d4aa;
+  --accent-dim: #00d4aa33;
+  --danger: #ff4444;
+  --danger-dim: #ff444433;
+  --warning: #ffaa00;
+  --warning-dim: #ffaa0033;
+  --safe: #00cc66;
+  --safe-dim: #00cc6633;
+  --font-mono: 'SF Mono', 'Consolas', 'Courier New', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  overflow: hidden;
+  height: 100vh;
+}
+.app {
+  display: grid;
+  grid-template-rows: 48px 1fr;
+  height: 100vh;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo { font-weight: 700; font-size: 15px; color: var(--accent); letter-spacing: 0.5px; }
+.protocol-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+.header-right { display: flex; align-items: center; gap: 16px; }
+.ws-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.ws-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--danger);
+  transition: background 0.3s;
+}
+.ws-dot.connected { background: var(--safe); box-shadow: 0 0 8px var(--safe); }
+
+/* ===== MAIN LAYOUT ===== */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  overflow: hidden;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.nav-tabs { padding: 12px; }
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+.nav-tab:hover { background: var(--bg-hover); color: var(--text-primary); }
+.nav-tab.active { background: var(--accent-dim); color: var(--accent); }
+.nav-tab svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.stream-info {
+  padding: 16px 12px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 11px;
+}
+.info-label { color: var(--text-secondary); }
+.info-value { color: var(--text-primary); font-family: var(--font-mono); }
+
+/* ===== CENTER PANEL ===== */
+.center-panel {
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Connection Form */
+.connect-form {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.connect-form input {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  outline: none;
+}
+.connect-form input:focus { border-color: var(--accent); }
+.connect-form input[type="text"] { flex: 2; }
+.connect-form input[type="number"] { flex: 1; max-width: 90px; }
+.connect-form button {
+  background: var(--accent);
+  border: none;
+  color: #000;
+  padding: 8px 18px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.connect-form button:hover { opacity: 0.8; }
+.connect-form button.disconnect { background: var(--danger); color: #fff; }
+
+/* Panel Title */
+.panel-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+/* Two Column Layout for SRT */
+.srt-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ===== VIDEO SECTION ===== */
+.video-section {}
+.video-preview {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 16/9;
+}
+.video-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+.video-overlay {
+  position: absolute;
+  top: 8px; left: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.video-badge {
+  background: rgba(0,0,0,0.75);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+
+/* Technical Data */
+.tech-data {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.tech-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+}
+.tech-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.tech-value { font-family: var(--font-mono); font-size: 13px; color: var(--text-primary); font-weight: 600; }
+
+/* GOP Structure */
+.gop-section { margin-top: 12px; }
+.gop-bar {
+  display: flex;
+  gap: 3px;
+  padding: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+.gop-frame {
+  width: 22px; height: 22px;
+  border-radius: 3px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.gop-frame.I { background: var(--safe-dim); color: var(--safe); border: 1px solid var(--safe); }
+.gop-frame.IDR { background: var(--safe-dim); color: var(--safe); border: 2px solid var(--safe); }
+.gop-frame.P { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
+.gop-frame.B { background: var(--warning-dim); color: var(--warning); border: 1px solid var(--warning); }
+
+/* ===== SRT STATS SECTION ===== */
+.srt-stats-section {}
+
+.srt-status-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.srt-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.srt-status-title { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.srt-status-badge {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.srt-status-badge.connected { background: var(--safe-dim); color: var(--safe); }
+.srt-status-badge.disconnected { background: var(--danger-dim); color: var(--danger); }
+
+.srt-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.srt-metric {
+  background: var(--bg-primary);
+  border-radius: 6px;
+  padding: 10px;
+}
+.srt-metric-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; }
+.srt-metric-value { font-family: var(--font-mono); font-size: 16px; font-weight: 700; }
+.srt-metric-value.safe { color: var(--safe); }
+.srt-metric-value.warning { color: var(--warning); }
+.srt-metric-value.danger { color: var(--danger); }
+
+/* SRT Charts */
+.srt-chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.srt-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.srt-chart-title { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.time-window-selector {
+  display: flex;
+  gap: 4px;
+}
+.time-btn {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 9px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+.time-btn.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+.srt-chart-canvas {
+  width: 100%;
+  height: 100px;
+  background: var(--bg-primary);
+  border-radius: 4px;
+}
+
+/* ===== AUDIO SECTION (Right Column) ===== */
+.audio-section {}
+
+/* DBFS Meters */
+.dbfs-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.dbfs-meter {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+.dbfs-label { font-size: 10px; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.dbfs-scale {
+  position: relative;
+  height: 240px;
+  background: #0d0d15;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.dbfs-bar {
+  position: absolute;
+  bottom: 0;
+  left: 15%; right: 15%;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.05s linear;
+  min-height: 2px;
+}
+.dbfs-bar.green { background: var(--safe); }
+.dbfs-bar.yellow { background: var(--warning); }
+.dbfs-bar.red { background: var(--danger); }
+.dbfs-tick {
+  position: absolute;
+  left: 0; right: 0;
+  border-top: 1px solid #2a2a3a;
+  font-size: 9px;
+  color: var(--text-secondary);
+  padding-left: 4px;
+  font-family: var(--font-mono);
+  line-height: 0;
+}
+.dbfs-value {
+  text-align: center;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* LUFS Cards */
+.lufs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.lufs-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+.lufs-label { font-size: 10px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.lufs-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+}
+.lufs-value.safe { color: var(--safe); }
+.lufs-value.warning { color: var(--warning); }
+.lufs-value.danger { color: var(--danger); }
+
+/* Extra LUFS row */
+.lufs-extra-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+/* Loudness History */
+.history-section {}
+.history-canvas {
+  width: 100%;
+  height: 160px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+/* ===== RIGHT PANEL ===== */
+.right-panel {
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.alerts-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.alert-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+.alert-item.warning { border-left: 3px solid var(--warning); }
+.alert-item.critical { border-left: 3px solid var(--danger); }
+.alert-item.info { border-left: 3px solid var(--accent); }
+.alert-time { color: var(--text-secondary); font-size: 10px; margin-bottom: 4px; font-family: var(--font-mono); }
+.alert-msg { color: var(--text-primary); line-height: 1.4; }
+
+.settings-section {
+  padding: 16px;
+}
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.setting-label { font-size: 11px; color: var(--text-secondary); }
+.setting-value { font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Tab content hide/show */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== APPROVED DBFS METER (segmented bar) ===== */
+.dbfs-meters {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  justify-content: center;
+}
+.dbfs-meter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.dbfs-meter__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.dbfs-meter__body {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 260px;
+}
+/* --- Ticks panel (OUTSIDE the scale) --- */
+.dbfs-meter__ticks-panel {
+  width: 28px;
+  position: relative;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+.dbfs-meter__ticks-panel--right {
+  margin-right: 0;
+  margin-left: 4px;
+}
+.tick {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 0;
+  transform: translateY(-50%);
+}
+.tick--right {
+  justify-content: flex-start;
+  flex-direction: row-reverse;
+}
+.tick__line {
+  width: 6px;
+  height: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.tick__number {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  line-height: 1;
+  text-align: right;
+  min-width: 16px;
+}
+.tick--right .tick__number {
+  text-align: left;
+}
+.tick-0    { top: 0%; }
+.tick-2    { top: 2.86%; }
+.tick-9    { top: 12.86%; }
+.tick-18   { top: 25.71%; }
+.tick-20   { top: 28.57%; }
+.tick-30   { top: 42.86%; }
+.tick-40   { top: 57.14%; }
+.tick-50   { top: 71.43%; }
+.tick-60   { top: 85.71%; }
+.tick-70   { top: 100%; }
+/* --- Scale --- */
+.dbfs-meter__scale {
+  width: 72px;
+  height: 260px;
+  background: var(--bg-input);
+  border-radius: 4px;
+  position: relative;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+/* Background zones (subtle tint) */
+.dbfs-meter__zones {
+  position: absolute;
+  left: 0; top: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+.zone {
+  position: absolute;
+  left: 0; right: 0;
+}
+.zone--red    { top: 0%;      height: 2.86%;   background: rgba(255, 68, 68, 0.15); }
+.zone--orange { top: 2.86%;   height: 10.0%;   background: rgba(255, 102, 0, 0.05); }
+.zone--yellow { top: 12.86%;  height: 12.86%;  background: rgba(255, 170, 0, 0.05); }
+.zone--green  { top: 25.71%;  height: 60.0%;   background: rgba(0, 204, 102, 0.05); }
+/* ===== SOLID SEGMENT BAR ===== */
+.dbfs-meter__bar-container {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 0px;
+  max-height: 252px;
+  background: var(--bg-input);
+  overflow: hidden;
+  border-radius: 2px;
+}
+/* Segments positioned absolutely from bottom of container */
+.seg {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+.seg--green  { bottom: 36px;  height: 151px; background: var(--safe); }
+.seg--yellow { bottom: 187px; height: 33px;  background: var(--warning); }
+.seg--orange { bottom: 220px; height: 25px;  background: var(--orange); }
+.seg--red    { bottom: 245px; height: 7px;   background: var(--danger); }
+/* Peak hold line */
+.dbfs-meter__peak {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 2px;
+  background: #fff;
+  box-shadow: 0 0 4px rgba(255,255,255,0.8);
+  transition: bottom 0.1s linear;
+  z-index: 4;
+}
+/* --- DBFS READOUTS --- */
+.dbfs-readouts {
+  display: grid;
+  grid-template-columns: 104px 104px;
+  gap: 40px;
+  margin-top: 4px;
+  width: 248px;
+  justify-content: center;
+}
+.dbfs-readouts__column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.dbfs-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  width: 100%;
+  align-items: center;
+}
+.dbfs-readout__label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+.dbfs-readout__value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.dbfs-readout__value--safe    { color: var(--safe); }
+.dbfs-readout__value--warning { color: var(--warning); }
+.dbfs-readout__value--orange  { color: var(--orange); }
+.dbfs-readout__value--danger  { color: var(--danger); }
+
+/* ===== LUFS METER (3 scales: M, S, I) ===== */
+.lufs-meters {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  justify-content: center;
+}
+.lufs-meter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.lufs-meter__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.lufs-meter__body {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 260px;
+}
+/* Ticks panel */
+.lufs-meter__ticks-panel {
+  width: 28px;
+  position: relative;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+.lufs-meter__ticks-panel--right {
+  margin-right: 0;
+  margin-left: 4px;
+}
+.lufs-tick {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 0;
+  transform: translateY(-50%);
+}
+.lufs-tick--right {
+  justify-content: flex-start;
+  flex-direction: row-reverse;
+}
+.lufs-tick__line {
+  width: 6px;
+  height: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.lufs-tick__number {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  line-height: 1;
+  text-align: right;
+  min-width: 16px;
+}
+.lufs-tick--right .lufs-tick__number {
+  text-align: left;
+}
+/* Tick positions for 0..-40 scale */
+.lufs-tick-0  { top: 0%; }
+.lufs-tick-5  { top: 12.5%; }
+.lufs-tick-10 { top: 25%; }
+.lufs-tick-15 { top: 37.5%; }
+.lufs-tick-20 { top: 50%; }
+.lufs-tick-23 { top: 57.5%; }
+.lufs-tick-26 { top: 65%; }
+.lufs-tick-30 { top: 75%; }
+.lufs-tick-40 { top: 100%; }
+/* Scale */
+.lufs-meter__scale {
+  width: 72px;
+  height: 260px;
+  background: var(--bg-input);
+  border-radius: 4px;
+  position: relative;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+/* Background zones */
+.lufs-meter__zones {
+  position: absolute;
+  left: 0; top: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+.lufs-zone {
+  position: absolute;
+  left: 0; right: 0;
+}
+.lufs-zone--red    { top: 0%;      height: 58.75%;  background: rgba(255, 68, 68, 0.10); }
+.lufs-zone--yellow { top: 58.75%;  height: 6.25%;   background: rgba(255, 170, 0, 0.10); }
+.lufs-zone--green  { top: 65%;     height: 35%;     background: rgba(0, 204, 102, 0.10); }
+/* Segmented bar */
+.lufs-meter__bar-container {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 0px;
+  max-height: 252px;
+  background: var(--bg-input);
+  overflow: hidden;
+  border-radius: 2px;
+}
+.lufs-seg {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+.lufs-seg--green  { bottom: 0px;   height: 163px;  background: var(--safe); }
+.lufs-seg--yellow { bottom: 163px; height: 16px;   background: var(--warning); }
+.lufs-seg--red    { bottom: 179px; height: 73px;   background: var(--danger); }
+/* Peak hold line */
+.lufs-meter__peak {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 2px;
+  background: #fff;
+  box-shadow: 0 0 4px rgba(255,255,255,0.8);
+  transition: bottom 0.1s linear;
+  z-index: 4;
+}
+/* TP line on M scale (dashed, different color) */
+.lufs-meter__tp-line {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 2px;
+  background: #00d4aa;
+  box-shadow: 0 0 4px rgba(0,212,170,0.6);
+  transition: bottom 0.1s linear;
+  z-index: 5;
+}
+/* Readouts */
+.lufs-readouts {
+  display: grid;
+  grid-template-columns: 104px 104px 104px;
+  gap: 40px;
+  margin-top: 4px;
+  justify-content: center;
+}
+.lufs-readouts__column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.lufs-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  width: 100%;
+  align-items: center;
+}
+.lufs-readout__label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+.lufs-readout__value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.lufs-readout__value--safe    { color: var(--safe); }
+.lufs-readout__value--warning { color: var(--warning); }
+.lufs-readout__value--danger  { color: var(--danger); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">◆ MEDIA STREAM ANALYZER</div>
+      <div class="nav-tabs" style="display:flex;gap:4px;margin-left:16px;">
+        <div class="nav-tab active" data-tab="srt" style="padding:6px 12px;font-size:11px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          SRT Stream
+        </div>
+        <div class="nav-tab" data-tab="audio" style="padding:6px 12px;font-size:11px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M12 2v20M2 12h20M4 4l16 16M20 4L4 20"/></svg>
+          Audio
+        </div>
+        <div class="nav-tab" data-tab="video" style="padding:6px 12px;font-size:11px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M10 12l5-3v6l-5-3z"/></svg>
+          Video
+        </div>
+        <div class="nav-tab" data-tab="transport" style="padding:6px 12px;font-size:11px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          Transport
+        </div>
+        <div class="nav-tab" data-tab="network" style="padding:6px 12px;font-size:11px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m4.22-10.22l4.24-4.24M7.78 7.78L3.54 3.54m15.68 15.68l4.24 4.24M7.78 16.22l-4.24 4.24"/></svg>
+          Network
+        </div>
+        <div class="nav-tab" data-tab="logs" style="padding:6px 12px;font-size:11px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Logs
+        </div>
+      </div>
+      <select class="protocol-select" id="protocolSelect">
+        <option value="srt" selected>SRT</option>
+        <option value="icecast">IceCast</option>
+        <option value="rtmp">RTMP</option>
+        <option value="hls">HLS</option>
+        <option value="rtsp">RTSP</option>
+        <option value="ndi">NDI</option>
+        <option value="mpegts">MPEG-TS</option>
+        <option value="sdi">SDI</option>
+      </select>
+    </div>
+    <div class="header-right">
+      <div class="ws-status">
+        <div class="ws-dot connected" id="wsDot"></div>
+        <span id="wsText">Connected</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- CENTER PANEL -->
+    <main class="center-panel">
+      <!-- Connection Form -->
+      <div class="connect-form">
+        <input type="text" value="srt://example.com:5000" style="flex:2">
+        <input type="number" value="300" min="20" max="8000" placeholder="ms">
+        <button>Connect</button>
+        <button class="disconnect">Disconnect</button>
+      </div>
+
+      <!-- TAB: SRT (Main View) -->
+      <div class="tab-content active" id="tab-srt">
+        <div class="srt-layout">
+          <!-- LEFT COLUMN: Video + SRT -->
+          <div class="left-column">
+            <!-- Video Preview -->
+            <div class="panel-title">Video Keyframe</div>
+            <div class="video-preview">
+              <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0%25' stop-color='%23fff'/%3E%3Cstop offset='14%25' stop-color='%23ff0'/%3E%3Cstop offset='28%25' stop-color='%230ff'/%3E%3Cstop offset='42%25' stop-color='%230f0'/%3E%3Cstop offset='57%25' stop-color='%23f0f'/%3E%3Cstop offset='71%25' stop-color='%23f00'/%3E%3Cstop offset='85%25' stop-color='%2300f'/%3E%3Cstop offset='100%25' stop-color='%23fff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='640' height='360' fill='url(%23g)'/%3E%3C/svg%3E" alt="Keyframe">
+              <div class="video-overlay">
+                <div class="video-badge">H.264</div>
+                <div class="video-badge">1920×1080</div>
+                <div class="video-badge">50 fps</div>
+                <div class="video-badge">IDR</div>
+              </div>
+            </div>
+
+            <!-- Technical Data -->
+            <div class="panel-title" style="margin-top:12px">Technical Data</div>
+            <div class="tech-data">
+              <div class="tech-item">
+                <div class="tech-label">Codec</div>
+                <div class="tech-value">H.264</div>
+              </div>
+              <div class="tech-item">
+                <div class="tech-label">Resolution</div>
+                <div class="tech-value">1920×1080</div>
+              </div>
+              <div class="tech-item">
+                <div class="tech-label">Frame Rate</div>
+                <div class="tech-value">50 fps</div>
+              </div>
+              <div class="tech-item">
+                <div class="tech-label">Bitrate</div>
+                <div class="tech-value">8.2 Mbps</div>
+              </div>
+              <div class="tech-item">
+                <div class="tech-label">Color Space</div>
+                <div class="tech-value">BT.709</div>
+              </div>
+              <div class="tech-item">
+                <div class="tech-label">Profile</div>
+                <div class="tech-value">High</div>
+              </div>
+            </div>
+
+            <!-- GOP Structure -->
+            <div class="gop-section">
+              <div class="panel-title">GOP Structure</div>
+              <div class="gop-bar">
+                <div class="gop-frame IDR">I</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame P">P</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame P">P</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame P">P</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame P">P</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame I">I</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame B">B</div>
+                <div class="gop-frame P">P</div>
+                <div class="gop-frame B">B</div>
+              </div>
+            </div>
+
+            <!-- SRT Connection Status -->
+            <div class="panel-title" style="margin-top:12px">SRT Connection Status</div>
+            <div class="srt-status-card">
+              <div class="srt-status-header">
+                <div class="srt-status-title">Connection</div>
+                <div class="srt-status-badge connected">CONNECTED</div>
+              </div>
+              <div class="srt-metrics-grid">
+                <div class="srt-metric">
+                  <div class="srt-metric-label">RTT</div>
+                  <div class="srt-metric-value safe">45 <span style="font-size:10px;color:var(--text-secondary)">ms</span></div>
+                </div>
+                <div class="srt-metric">
+                  <div class="srt-metric-label">Bandwidth</div>
+                  <div class="srt-metric-value safe">8.42 <span style="font-size:10px;color:var(--text-secondary)">Mbps</span></div>
+                </div>
+                <div class="srt-metric">
+                  <div class="srt-metric-label">Packet Loss</div>
+                  <div class="srt-metric-value safe">0.02 <span style="font-size:10px;color:var(--text-secondary)">%</span></div>
+                </div>
+                <div class="srt-metric">
+                  <div class="srt-metric-label">Buffer</div>
+                  <div class="srt-metric-value safe">118 <span style="font-size:10px;color:var(--text-secondary)">ms</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SRT Charts -->
+            <div class="panel-title">SRT Statistics</div>
+            <div class="srt-chart-card">
+              <div class="srt-chart-header">
+                <div class="srt-chart-title">RTT (ms)</div>
+                <div class="time-window-selector">
+                  <button class="time-btn">1m</button>
+                  <button class="time-btn active">5m</button>
+                  <button class="time-btn">15m</button>
+                  <button class="time-btn">30m</button>
+                  <button class="time-btn">60m</button>
+                </div>
+              </div>
+              <canvas class="srt-chart-canvas" id="rttChart" width="400" height="100"></canvas>
+            </div>
+            <div class="srt-chart-card">
+              <div class="srt-chart-header">
+                <div class="srt-chart-title">Bandwidth (Mbps)</div>
+                <div class="time-window-selector">
+                  <button class="time-btn">1m</button>
+                  <button class="time-btn active">5m</button>
+                  <button class="time-btn">15m</button>
+                  <button class="time-btn">30m</button>
+                  <button class="time-btn">60m</button>
+                </div>
+              </div>
+              <canvas class="srt-chart-canvas" id="bwChart" width="400" height="100"></canvas>
+            </div>
+            <div class="srt-chart-card">
+              <div class="srt-chart-header">
+                <div class="srt-chart-title">Packet Loss (%)</div>
+                <div class="time-window-selector">
+                  <button class="time-btn">1m</button>
+                  <button class="time-btn active">5m</button>
+                  <button class="time-btn">15m</button>
+                  <button class="time-btn">30m</button>
+                  <button class="time-btn">60m</button>
+                </div>
+              </div>
+              <canvas class="srt-chart-canvas" id="lossChart" width="400" height="100"></canvas>
+            </div>
+            <div class="srt-chart-card">
+              <div class="srt-chart-header">
+                <div class="srt-chart-title">Buffer (ms)</div>
+                <div class="time-window-selector">
+                  <button class="time-btn">1m</button>
+                  <button class="time-btn active">5m</button>
+                  <button class="time-btn">15m</button>
+                  <button class="time-btn">30m</button>
+                  <button class="time-btn">60m</button>
+                </div>
+              </div>
+              <canvas class="srt-chart-canvas" id="bufChart" width="400" height="100"></canvas>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Audio -->
+          <div class="right-column">
+            <!-- DBFS Meter — APPROVED SCALE (segmented bar, 4 zones) -->
+            <div class="panel-title">DBFS (Digital Peak)</div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;">
+              <div class="dbfs-meters">
+                <!-- LEFT -->
+                <div class="dbfs-meter">
+                  <div class="dbfs-meter__label">LEFT</div>
+                  <div class="dbfs-meter__body">
+                    <div class="dbfs-meter__ticks-panel">
+                      <div class="tick tick-0"><div class="tick__line"></div><div class="tick__number" style="color:var(--danger);font-weight:bold;">0</div></div>
+                      <div class="tick tick-2"><div class="tick__line"></div><div class="tick__number" style="color:var(--danger);font-weight:bold;">2</div></div>
+                      <div class="tick tick-9"><div class="tick__line"></div><div class="tick__number" style="color:var(--warning);font-weight:bold;">9</div></div>
+                      <div class="tick tick-18"><div class="tick__line"></div><div class="tick__number" style="color:var(--warning);font-weight:bold;">18</div></div>
+                      <div class="tick tick-20"><div class="tick__line"></div><div class="tick__number">20</div></div>
+                      <div class="tick tick-30"><div class="tick__line"></div><div class="tick__number">30</div></div>
+                      <div class="tick tick-40"><div class="tick__line"></div><div class="tick__number">40</div></div>
+                      <div class="tick tick-50"><div class="tick__line"></div><div class="tick__number">50</div></div>
+                      <div class="tick tick-60"><div class="tick__line"></div><div class="tick__number">60</div></div>
+                      <div class="tick tick-70"><div class="tick__line"></div><div class="tick__number">70</div></div>
+                    </div>
+                    <div class="dbfs-meter__scale">
+                      <div class="dbfs-meter__zones">
+                        <div class="zone zone--red"></div>
+                        <div class="zone zone--orange"></div>
+                        <div class="zone zone--yellow"></div>
+                        <div class="zone zone--green"></div>
+                      </div>
+                      <div class="dbfs-meter__bar-container" id="dbfsBarContainerL">
+                        <div class="seg seg--green"></div>
+                        <div class="seg seg--yellow"></div>
+                        <div class="seg seg--orange"></div>
+                        <div class="seg seg--red"></div>
+                      </div>
+                      <div class="dbfs-meter__peak" id="dbfsPeakL" style="bottom:249px;"></div>
+                    </div>
+                  </div>
+                </div>
+                <!-- RIGHT -->
+                <div class="dbfs-meter">
+                  <div class="dbfs-meter__label">RIGHT</div>
+                  <div class="dbfs-meter__body">
+                    <div class="dbfs-meter__scale">
+                      <div class="dbfs-meter__zones">
+                        <div class="zone zone--red"></div>
+                        <div class="zone zone--orange"></div>
+                        <div class="zone zone--yellow"></div>
+                        <div class="zone zone--green"></div>
+                      </div>
+                      <div class="dbfs-meter__bar-container" id="dbfsBarContainerR">
+                        <div class="seg seg--green"></div>
+                        <div class="seg seg--yellow"></div>
+                        <div class="seg seg--orange"></div>
+                        <div class="seg seg--red"></div>
+                      </div>
+                      <div class="dbfs-meter__peak" id="dbfsPeakR" style="bottom:249px;"></div>
+                    </div>
+                    <div class="dbfs-meter__ticks-panel dbfs-meter__ticks-panel--right">
+                      <div class="tick tick-0 tick--right"><div class="tick__line"></div><div class="tick__number" style="color:var(--danger);font-weight:bold;">0</div></div>
+                      <div class="tick tick-2 tick--right"><div class="tick__line"></div><div class="tick__number" style="color:var(--danger);font-weight:bold;">2</div></div>
+                      <div class="tick tick-9 tick--right"><div class="tick__line"></div><div class="tick__number" style="color:var(--warning);font-weight:bold;">9</div></div>
+                      <div class="tick tick-18 tick--right"><div class="tick__line"></div><div class="tick__number" style="color:var(--warning);font-weight:bold;">18</div></div>
+                      <div class="tick tick-20 tick--right"><div class="tick__line"></div><div class="tick__number">20</div></div>
+                      <div class="tick tick-30 tick--right"><div class="tick__line"></div><div class="tick__number">30</div></div>
+                      <div class="tick tick-40 tick--right"><div class="tick__line"></div><div class="tick__number">40</div></div>
+                      <div class="tick tick-50 tick--right"><div class="tick__line"></div><div class="tick__number">50</div></div>
+                      <div class="tick tick-60 tick--right"><div class="tick__line"></div><div class="tick__number">60</div></div>
+                      <div class="tick tick-70 tick--right"><div class="tick__line"></div><div class="tick__number">70</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="dbfs-readouts">
+                <div class="dbfs-readouts__column">
+                  <div class="dbfs-readout">
+                    <div class="dbfs-readout__label">L</div>
+                    <div class="dbfs-readout__value dbfs-readout__value--danger" id="dbfsValL">-1.0</div>
+                    <div class="dbfs-readout__value dbfs-readout__value--danger">dBFS</div>
+                  </div>
+                  <div class="dbfs-readout">
+                    <div class="dbfs-readout__label">PEAK HOLD L</div>
+                    <div class="dbfs-readout__value dbfs-readout__value--danger" id="peakHoldL">-1.0</div>
+                    <div class="dbfs-readout__value dbfs-readout__value--danger">dBFS</div>
+                  </div>
+                </div>
+                <div class="dbfs-readouts__column">
+                  <div class="dbfs-readout">
+                    <div class="dbfs-readout__label">R</div>
+                    <div class="dbfs-readout__value dbfs-readout__value--danger" id="dbfsValR">-1.5</div>
+                    <div class="dbfs-readout__value dbfs-readout__value--danger">dBFS</div>
+                  </div>
+                  <div class="dbfs-readout">
+                    <div class="dbfs-readout__label">PEAK HOLD R</div>
+                    <div class="dbfs-readout__value dbfs-readout__value--danger" id="peakHoldR">-1.0</div>
+                    <div class="dbfs-readout__value dbfs-readout__value--danger">dBFS</div>
+                  </div>
+                </div>
+              </div>
+            </div><!-- LUFS Meter — EBU R128 (3 scales: M, S, I) + TP on M -->
+            <div class="panel-title" style="margin-top:12px">LUFS Meter — EBU R128</div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;">
+              <div class="lufs-meters">
+                <!-- M (Momentary) -->
+                <div class="lufs-meter">
+                  <div class="lufs-meter__label" style="text-align:center;width:104px;">M</div>
+                  <div class="lufs-meter__body">
+                    <div class="lufs-meter__ticks-panel">
+                      <div class="lufs-tick lufs-tick-0"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">0</div></div>
+                      <div class="lufs-tick lufs-tick-5"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">5</div></div>
+                      <div class="lufs-tick lufs-tick-10"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">10</div></div>
+                      <div class="lufs-tick lufs-tick-15"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">15</div></div>
+                      <div class="lufs-tick lufs-tick-20"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">20</div></div>
+                      <div class="lufs-tick lufs-tick-23"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--warning);font-weight:bold;">23</div></div>
+                      <div class="lufs-tick lufs-tick-26"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--warning);font-weight:bold;">26</div></div>
+                      <div class="lufs-tick lufs-tick-30"><div class="lufs-tick__line"></div><div class="lufs-tick__number">30</div></div>
+                      <div class="lufs-tick lufs-tick-40"><div class="lufs-tick__line"></div><div class="lufs-tick__number">40</div></div>
+                    </div>
+                    <div class="lufs-meter__scale">
+                      <div class="lufs-meter__zones">
+                        <div class="lufs-zone lufs-zone--red"></div>
+                        <div class="lufs-zone lufs-zone--yellow"></div>
+                        <div class="lufs-zone lufs-zone--green"></div>
+                      </div>
+                      <div class="lufs-meter__bar-container" id="lufsBarContainerM">
+                        <div class="lufs-seg lufs-seg--green"></div>
+                        <div class="lufs-seg lufs-seg--yellow"></div>
+                        <div class="lufs-seg lufs-seg--red"></div>
+                      </div>
+                      <div class="lufs-meter__peak" id="lufsPeakM" style="bottom:249px;"></div>
+                      <div class="lufs-meter__tp-line" id="lufsTpLineM" style="bottom:230px;"></div>
+                    </div>
+                  </div>
+                  <div class="lufs-readouts" style="grid-template-columns:104px;gap:6px;margin-top:8px;">
+                    <div class="lufs-readout">
+                      <div class="lufs-readout__label">M</div>
+                      <div class="lufs-readout__value lufs-readout__value--warning" id="lufsValM">-23.5</div>
+                      <div class="lufs-readout__value lufs-readout__value--warning">LUFS</div>
+                    </div>
+                    <div class="lufs-readout">
+                      <div class="lufs-readout__label">TP</div>
+                      <div class="lufs-readout__value lufs-readout__value--danger" id="tpValM">-1.0</div>
+                      <div class="lufs-readout__value lufs-readout__value--danger">dBTP</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- S (Short-term) -->
+                <div class="lufs-meter">
+                  <div class="lufs-meter__label" style="text-align:center;width:104px;">S</div>
+                  <div class="lufs-meter__body">
+                    <div class="lufs-meter__ticks-panel">
+                      <div class="lufs-tick lufs-tick-0"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">0</div></div>
+                      <div class="lufs-tick lufs-tick-5"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">5</div></div>
+                      <div class="lufs-tick lufs-tick-10"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">10</div></div>
+                      <div class="lufs-tick lufs-tick-15"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">15</div></div>
+                      <div class="lufs-tick lufs-tick-20"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">20</div></div>
+                      <div class="lufs-tick lufs-tick-23"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--warning);font-weight:bold;">23</div></div>
+                      <div class="lufs-tick lufs-tick-26"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--warning);font-weight:bold;">26</div></div>
+                      <div class="lufs-tick lufs-tick-30"><div class="lufs-tick__line"></div><div class="lufs-tick__number">30</div></div>
+                      <div class="lufs-tick lufs-tick-40"><div class="lufs-tick__line"></div><div class="lufs-tick__number">40</div></div>
+                    </div>
+                    <div class="lufs-meter__scale">
+                      <div class="lufs-meter__zones">
+                        <div class="lufs-zone lufs-zone--red"></div>
+                        <div class="lufs-zone lufs-zone--yellow"></div>
+                        <div class="lufs-zone lufs-zone--green"></div>
+                      </div>
+                      <div class="lufs-meter__bar-container" id="lufsBarContainerS">
+                        <div class="lufs-seg lufs-seg--green"></div>
+                        <div class="lufs-seg lufs-seg--yellow"></div>
+                        <div class="lufs-seg lufs-seg--red"></div>
+                      </div>
+                      <div class="lufs-meter__peak" id="lufsPeakS" style="bottom:249px;"></div>
+                    </div>
+                  </div>
+                  <div class="lufs-readouts" style="grid-template-columns:104px;gap:6px;margin-top:8px;">
+                    <div class="lufs-readout">
+                      <div class="lufs-readout__label">S</div>
+                      <div class="lufs-readout__value lufs-readout__value--safe" id="lufsValS">-24.2</div>
+                      <div class="lufs-readout__value lufs-readout__value--safe">LUFS</div>
+                    </div>
+                    <div class="lufs-readout">
+                      <div class="lufs-readout__label">LRA</div>
+                      <div class="lufs-readout__value lufs-readout__value--safe" id="lraVal">4.1</div>
+                      <div class="lufs-readout__value lufs-readout__value--safe">LU</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- I (Integrated) -->
+                <div class="lufs-meter">
+                  <div class="lufs-meter__label" style="text-align:center;width:104px;">I</div>
+                  <div class="lufs-meter__body">
+                    <div class="lufs-meter__ticks-panel">
+                      <div class="lufs-tick lufs-tick-0"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">0</div></div>
+                      <div class="lufs-tick lufs-tick-5"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">5</div></div>
+                      <div class="lufs-tick lufs-tick-10"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">10</div></div>
+                      <div class="lufs-tick lufs-tick-15"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">15</div></div>
+                      <div class="lufs-tick lufs-tick-20"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--danger);font-weight:bold;">20</div></div>
+                      <div class="lufs-tick lufs-tick-23"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--warning);font-weight:bold;">23</div></div>
+                      <div class="lufs-tick lufs-tick-26"><div class="lufs-tick__line"></div><div class="lufs-tick__number" style="color:var(--warning);font-weight:bold;">26</div></div>
+                      <div class="lufs-tick lufs-tick-30"><div class="lufs-tick__line"></div><div class="lufs-tick__number">30</div></div>
+                      <div class="lufs-tick lufs-tick-40"><div class="lufs-tick__line"></div><div class="lufs-tick__number">40</div></div>
+                    </div>
+                    <div class="lufs-meter__scale">
+                      <div class="lufs-meter__zones">
+                        <div class="lufs-zone lufs-zone--red"></div>
+                        <div class="lufs-zone lufs-zone--yellow"></div>
+                        <div class="lufs-zone lufs-zone--green"></div>
+                      </div>
+                      <div class="lufs-meter__bar-container" id="lufsBarContainerI">
+                        <div class="lufs-seg lufs-seg--green"></div>
+                        <div class="lufs-seg lufs-seg--yellow"></div>
+                        <div class="lufs-seg lufs-seg--red"></div>
+                      </div>
+                      <div class="lufs-meter__peak" id="lufsPeakI" style="bottom:249px;"></div>
+                    </div>
+                  </div>
+                  <div class="lufs-readouts" style="grid-template-columns:104px;gap:6px;margin-top:8px;">
+                    <div class="lufs-readout">
+                      <div class="lufs-readout__label">I</div>
+                      <div class="lufs-readout__value lufs-readout__value--safe" id="lufsValI">-25.8</div>
+                      <div class="lufs-readout__value lufs-readout__value--safe">LUFS</div>
+                    </div>
+                    <div class="lufs-readout" style="visibility:hidden;">
+                      <div class="lufs-readout__label">&nbsp;</div>
+                      <div class="lufs-readout__value">&nbsp;</div>
+                      <div class="lufs-readout__value">&nbsp;</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div><!-- Loudness History -->
+            <div class="history-section">
+              <div class="panel-title">Loudness History (LUFS) — 60s Window</div>
+              <canvas class="history-canvas" id="historyCanvas" width="500" height="160"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL -->
+    <aside class="right-panel">
+      <div class="alerts-section">
+        <div class="panel-title">Alerts</div>
+        <div class="alert-item info">
+          <div class="alert-time">12:30:15</div>
+          <div class="alert-msg">System ready. Connected to srt://example.com:5000</div>
+        </div>
+        <div class="alert-item warning">
+          <div class="alert-time">12:32:44</div>
+          <div class="alert-msg">LUFS Momentary: -20.1 LUFS (threshold: -20.0)</div>
+        </div>
+        <div class="alert-item critical">
+          <div class="alert-time">12:33:12</div>
+          <div class="alert-msg">Packet Loss: 2.1% (threshold: 1.0%)</div>
+        </div>
+        <div class="alert-item warning">
+          <div class="alert-time">12:34:01</div>
+          <div class="alert-msg">SRT RTT: 145 ms (threshold: 100 ms)</div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="panel-title">Quick Settings</div>
+        <div class="setting-row"><span class="setting-label">LUFS Target</span><span class="setting-value">-23 LUFS</span></div>
+        <div class="setting-row"><span class="setting-label">True Peak Max</span><span class="setting-value">-1.0 dBTP</span></div>
+        <div class="setting-row"><span class="setting-label">Silence Threshold</span><span class="setting-value">-70 dBFS</span></div>
+        <div class="setting-row"><span class="setting-label">SRT Latency</span><span class="setting-value" id="settingLatency">300 ms</span></div>
+        <div class="setting-row"><span class="setting-label">Update Rate</span><span class="setting-value">50 fps</span></div>
+        <div class="setting-row"><span class="setting-label">History Window</span><span class="setting-value">60 sec</span></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+// ===== TAB NAVIGATION =====
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const tabName = tab.dataset.tab;
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+  });
+});
+
+// ===== ANIMATED DBFS BARS =====
+function animateDbfs() {
+  const containerL = document.getElementById('dbfsBarContainerL');
+  const containerR = document.getElementById('dbfsBarContainerR');
+  const peakL = document.getElementById('dbfsPeakL');
+  const peakR = document.getElementById('dbfsPeakR');
+  const valL = document.getElementById('dbfsValL');
+  const valR = document.getElementById('dbfsValR');
+  const holdL = document.getElementById('peakHoldL');
+  const holdR = document.getElementById('peakHoldR');
+
+  const time = Date.now() / 1000;
+  // Emulate signal between -25 and -1 dBFS
+  const dbfsL = -13 + Math.sin(time * 3) * 8 + Math.sin(time * 7) * 3;
+  const dbfsR = -13 + Math.sin(time * 3.2) * 8 + Math.sin(time * 6.5) * 3;
+  const clampL = Math.max(-70, Math.min(0, dbfsL));
+  const clampR = Math.max(-70, Math.min(0, dbfsR));
+
+  // Bar height in px (max 252px inside 260px scale)
+  // 0 dBFS = top = maxPx,  -70 dBFS = bottom = 0px
+  // height = maxPx - (|dB| / 70) * maxPx  ← FIXED: inverted calculation
+  const maxPx = 252;
+  const pxL = maxPx - (Math.abs(clampL) / 70) * maxPx;
+  const pxR = maxPx - (Math.abs(clampR) / 70) * maxPx;
+
+  containerL.style.height = pxL + 'px';
+  containerR.style.height = pxR + 'px';
+
+  // 4-zone color
+  function getColorClass(dbfs) {
+    if (dbfs >= -2) return 'dbfs-readout__value--danger';
+    if (dbfs >= -9) return 'dbfs-readout__value--orange';
+    if (dbfs >= -18) return 'dbfs-readout__value--warning';
+    return 'dbfs-readout__value--safe';
+  }
+  function getColorHex(dbfs) {
+    if (dbfs >= -2) return '#ff4444';
+    if (dbfs >= -9) return '#ff6600';
+    if (dbfs >= -18) return '#ffaa00';
+    return '#00cc66';
+  }
+
+  const cL = getColorHex(clampL);
+  const cR = getColorHex(clampR);
+
+  valL.textContent = clampL.toFixed(1);
+  valR.textContent = clampR.toFixed(1);
+  valL.style.color = cL;
+  valR.style.color = cR;
+  valL.parentNode.querySelectorAll('.dbfs-readout__value')[1].style.color = cL;
+  valR.parentNode.querySelectorAll('.dbfs-readout__value')[1].style.color = cR;
+
+  // Peak hold line (positioned inside scale, bottom = 4px offset + height)
+  const holdValL = Math.max(clampL, -1.0);
+  const holdValR = Math.max(clampR, -1.5);
+  const holdPxL = maxPx - (Math.abs(holdValL) / 70) * maxPx;
+  const holdPxR = maxPx - (Math.abs(holdValR) / 70) * maxPx;
+  peakL.style.bottom = (4 + holdPxL) + 'px';
+  peakR.style.bottom = (4 + holdPxR) + 'px';
+
+  holdL.textContent = holdValL.toFixed(1);
+  holdR.textContent = holdValR.toFixed(1);
+  holdL.style.color = getColorHex(holdValL);
+  holdR.style.color = getColorHex(holdValR);
+  holdL.parentNode.querySelectorAll('.dbfs-readout__value')[1].style.color = getColorHex(holdValL);
+  holdR.parentNode.querySelectorAll('.dbfs-readout__value')[1].style.color = getColorHex(holdValR);
+
+  requestAnimationFrame(animateDbfs);
+}
+animateDbfs();
+
+// ===== LOUDNESS HISTORY CHART =====
+const historyCanvas = document.getElementById('historyCanvas');
+const hCtx = historyCanvas.getContext('2d');
+
+function generateHistory() {
+  const history = [];
+  for (let i = 0; i < 60; i++) {
+    const t = i / 60;
+    const base = -23 + Math.sin(t * Math.PI * 2) * 8;
+    const noise = (Math.random() - 0.5) * 4;
+    history.push({
+      lufs_m: Math.max(-70, Math.min(0, base + noise)),
+      lufs_s: Math.max(-70, Math.min(0, base + noise - 1)),
+      lufs_i: Math.max(-70, Math.min(0, base + noise - 2.5)),
+    });
+  }
+  return history;
+}
+
+function drawHistory() {
+  const w = historyCanvas.width;
+  const h = historyCanvas.height;
+  const pad = 25;
+  const history = generateHistory();
+
+  hCtx.clearRect(0, 0, w, h);
+
+  // Grid lines
+  hCtx.strokeStyle = '#2a2a3a';
+  hCtx.lineWidth = 1;
+  const labels = ['0', '-10', '-23', '-30', '-50', '-70'];
+  for (let i = 0; i <= 5; i++) {
+    const y = pad + (h - 2*pad) * i / 5;
+    hCtx.beginPath();
+    hCtx.moveTo(pad, y);
+    hCtx.lineTo(w - pad, y);
+    hCtx.stroke();
+    hCtx.fillStyle = '#9090a0';
+    hCtx.font = '9px monospace';
+    hCtx.fillText(labels[i], 2, y + 3);
+  }
+
+  // Target line at -23 LUFS
+  const targetY = pad + (h - 2*pad) * 2 / 5;
+  hCtx.strokeStyle = '#00d4aa';
+  hCtx.setLineDash([3, 3]);
+  hCtx.lineWidth = 1;
+  hCtx.beginPath();
+  hCtx.moveTo(pad, targetY);
+  hCtx.lineTo(w - pad, targetY);
+  hCtx.stroke();
+  hCtx.setLineDash([]);
+  hCtx.fillStyle = '#00d4aa';
+  hCtx.font = '9px monospace';
+  hCtx.fillText('TARGET', w - 40, targetY - 3);
+
+  // Draw filled area with gradient
+  hCtx.beginPath();
+  const stepX = (w - 2*pad) / (history.length - 1);
+
+  for (let i = 0; i < history.length; i++) {
+    const x = pad + i * stepX;
+    const lufs = history[i].lufs_m;
+    const y = pad + (h - 2*pad) * Math.abs(lufs) / 70;
+    if (i === 0) hCtx.moveTo(x, y);
+    else hCtx.lineTo(x, y);
+  }
+
+  hCtx.lineTo(pad + (history.length - 1) * stepX, targetY);
+  hCtx.lineTo(pad, targetY);
+  hCtx.closePath();
+
+  // Gradient fill: red above target, green below
+  const grad = hCtx.createLinearGradient(0, pad, 0, h - pad);
+  grad.addColorStop(0, '#ff444422');
+  grad.addColorStop(0.4, '#ff444422');
+  grad.addColorStop(0.5, '#00cc6622');
+  grad.addColorStop(1, '#00cc6622');
+  hCtx.fillStyle = grad;
+  hCtx.fill();
+
+  // Draw line
+  hCtx.beginPath();
+  for (let i = 0; i < history.length; i++) {
+    const x = pad + i * stepX;
+    const lufs = history[i].lufs_m;
+    const y = pad + (h - 2*pad) * Math.abs(lufs) / 70;
+    if (i === 0) hCtx.moveTo(x, y);
+    else hCtx.lineTo(x, y);
+  }
+  hCtx.strokeStyle = '#00d4aa';
+  hCtx.lineWidth = 2;
+  hCtx.stroke();
+
+  // Draw smooth curve (Catmull-Rom simulation)
+  hCtx.beginPath();
+  hCtx.strokeStyle = '#00d4aa88';
+  hCtx.lineWidth = 1;
+  for (let i = 0; i < history.length - 1; i++) {
+    const x1 = pad + i * stepX;
+    const y1 = pad + (h - 2*pad) * Math.abs(history[i].lufs_s) / 70;
+    const x2 = pad + (i + 1) * stepX;
+    const y2 = pad + (h - 2*pad) * Math.abs(history[i+1].lufs_s) / 70;
+    const cx = (x1 + x2) / 2;
+    hCtx.moveTo(x1, y1);
+    hCtx.quadraticCurveTo(cx, y1, x2, y2);
+  }
+  hCtx.stroke();
+}
+
+// Animate history
+setInterval(drawHistory, 1000);
+drawHistory();
+
+// ===== SRT CHARTS =====
+function drawChart(canvasId, color, dataFn, maxVal) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  const pad = 10;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Generate data
+  const data = [];
+  for (let i = 0; i < 50; i++) {
+    data.push(dataFn(i));
+  }
+
+  const stepX = (w - 2*pad) / (data.length - 1);
+
+  // Fill
+  ctx.beginPath();
+  for (let i = 0; i < data.length; i++) {
+    const x = pad + i * stepX;
+    const y = h - pad - (data[i] / maxVal) * (h - 2*pad);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.lineTo(pad + (data.length - 1) * stepX, h - pad);
+  ctx.lineTo(pad, h - pad);
+  ctx.closePath();
+  ctx.fillStyle = color + '22';
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  for (let i = 0; i < data.length; i++) {
+    const x = pad + i * stepX;
+    const y = h - pad - (data[i] / maxVal) * (h - 2*pad);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function updateCharts() {
+  const time = Date.now() / 1000;
+  drawChart('rttChart', '#00d4aa', i => 40 + Math.sin(i * 0.3 + time) * 15 + Math.random() * 5, 100);
+  drawChart('bwChart', '#00cc66', i => 7 + Math.sin(i * 0.2 + time * 0.5) * 2 + Math.random() * 0.5, 12);
+  drawChart('lossChart', '#ff4444', i => Math.max(0, Math.sin(i * 0.5 + time) * 0.5 + Math.random() * 0.3), 2);
+  drawChart('bufChart', '#ffaa00', i => 100 + Math.sin(i * 0.15 + time * 0.3) * 30 + Math.random() * 10, 200);
+}
+
+setInterval(updateCharts, 1000);
+updateCharts();
+
+// ===== TIME WINDOW BUTTONS =====
+document.querySelectorAll('.time-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const parent = btn.closest('.time-window-selector');
+    parent.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// ===== LUFS ANIMATION =====
+function animateLufs() {
+  const time = Date.now() / 1000;
+
+  // Realistic audio signal simulation with peaks and dynamics
+  const baseSignal = -24 + Math.sin(time * 0.8) * 4;  // Slow drift
+  const modulation = Math.sin(time * 2.5) * 3 + Math.sin(time * 5.2) * 1.5;  // Medium dynamics
+  const peaks = Math.max(0, Math.sin(time * 8) * 5 - 3) * Math.random();  // Occasional peaks
+  const noise = (Math.random() - 0.5) * 1.5;  // Random noise
+
+  // M (Momentary) - fastest response, most dynamic
+  const m = baseSignal + modulation + peaks + noise;
+
+  // S (Short-term) - medium response, averaged
+  const s = m * 0.6 + (-24) * 0.4 + Math.sin(time * 1.2) * 2;
+
+  // I (Integrated) - slowest response, very averaged
+  const i = s * 0.4 + (-25) * 0.6 + Math.sin(time * 0.5) * 1;
+
+  // True Peak - slightly above M
+  const tp = Math.max(m, -1.5) + 2.5 + Math.random() * 0.5;
+
+  // LRA - dynamic range measurement
+  const lra = 4 + Math.sin(time * 0.3) * 2 + Math.random() * 0.5;
+
+  const clampM = Math.max(-40, Math.min(0, m));
+  const clampS = Math.max(-40, Math.min(0, s));
+  const clampI = Math.max(-40, Math.min(0, i));
+  const clampTP = Math.max(-6, Math.min(0, tp));
+
+  // Bar heights (0..-40 scale, max 252px)
+  const maxPx = 252;
+  const pxM = maxPx - (Math.abs(clampM) / 40) * maxPx;
+  const pxS = maxPx - (Math.abs(clampS) / 40) * maxPx;
+  const pxI = maxPx - (Math.abs(clampI) / 40) * maxPx;
+
+  const containerM = document.getElementById('lufsBarContainerM');
+  const containerS = document.getElementById('lufsBarContainerS');
+  const containerI = document.getElementById('lufsBarContainerI');
+  if (containerM) containerM.style.height = pxM + 'px';
+  if (containerS) containerS.style.height = pxS + 'px';
+  if (containerI) containerI.style.height = pxI + 'px';
+
+  // Color by zone
+  function getColorClass(val) {
+    if (val > -23.5) return 'lufs-readout__value--danger';
+    if (val > -26) return 'lufs-readout__value--warning';
+    return 'lufs-readout__value--safe';
+  }
+  function getColorHex(val) {
+    if (val > -23.5) return '#ff4444';
+    if (val > -26) return '#ffaa00';
+    return '#00cc66';
+  }
+
+  // Update M readout + TP
+  const valM = document.getElementById('lufsValM');
+  const tpValM = document.getElementById('tpValM');
+  if (valM) {
+    valM.textContent = clampM.toFixed(1);
+    valM.className = 'lufs-readout__value ' + getColorClass(clampM);
+    valM.style.color = getColorHex(clampM);
+    valM.parentNode.querySelectorAll('.lufs-readout__value')[1].style.color = getColorHex(clampM);
+  }
+  if (tpValM) {
+    tpValM.textContent = clampTP.toFixed(1);
+    tpValM.className = 'lufs-readout__value ' + (clampTP > -1 ? 'lufs-readout__value--danger' : 'lufs-readout__value--safe');
+    tpValM.style.color = clampTP > -1 ? '#ff4444' : '#00cc66';
+    tpValM.parentNode.querySelectorAll('.lufs-readout__value')[1].style.color = clampTP > -1 ? '#ff4444' : '#00cc66';
+  }
+
+  // Update S readout
+  const valS = document.getElementById('lufsValS');
+  if (valS) {
+    valS.textContent = clampS.toFixed(1);
+    valS.className = 'lufs-readout__value ' + getColorClass(clampS);
+    valS.style.color = getColorHex(clampS);
+    valS.parentNode.querySelectorAll('.lufs-readout__value')[1].style.color = getColorHex(clampS);
+  }
+
+  // Update I readout
+  const valI = document.getElementById('lufsValI');
+  if (valI) {
+    valI.textContent = clampI.toFixed(1);
+    valI.className = 'lufs-readout__value ' + getColorClass(clampI);
+    valI.style.color = getColorHex(clampI);
+    valI.parentNode.querySelectorAll('.lufs-readout__value')[1].style.color = getColorHex(clampI);
+  }
+
+  // Update LRA
+  const lraVal = document.getElementById('lraVal');
+  if (lraVal) {
+    lraVal.textContent = lra.toFixed(1);
+  }
+
+  // Peak hold lines with realistic decay
+  const peakM = document.getElementById('lufsPeakM');
+  const peakS = document.getElementById('lufsPeakS');
+  const peakI = document.getElementById('lufsPeakI');
+  const holdM = Math.max(clampM, -20 + Math.sin(time * 0.5) * 3);
+  const holdS = Math.max(clampS, -22 + Math.sin(time * 0.3) * 2);
+  const holdI = Math.max(clampI, -24 + Math.sin(time * 0.2) * 1);
+  if (peakM) peakM.style.bottom = (4 + maxPx - (Math.abs(holdM) / 40) * maxPx) + 'px';
+  if (peakS) peakS.style.bottom = (4 + maxPx - (Math.abs(holdS) / 40) * maxPx) + 'px';
+  if (peakI) peakI.style.bottom = (4 + maxPx - (Math.abs(holdI) / 40) * maxPx) + 'px';
+
+  // TP line on M scale
+  const tpLineM = document.getElementById('lufsTpLineM');
+  if (tpLineM) {
+    const tpPx = maxPx - (Math.abs(clampTP) / 6) * maxPx;
+    tpLineM.style.bottom = (4 + tpPx) + 'px';
+  }
+
+  // Overview cards
+  const ovLufs = document.getElementById('ovLufs');
+  if (ovLufs) {
+    ovLufs.textContent = clampM.toFixed(1);
+    ovLufs.className = 'metric-card__value metric-card__value--' + (clampM > -23.5 ? 'danger' : clampM > -26 ? 'warning' : 'safe');
+  }
+
+  requestAnimationFrame(animateLufs);
+}
+animateLufs();
+}
+animateLufs();
+</script>
+</body>
+</html>

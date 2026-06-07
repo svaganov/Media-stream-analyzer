@@ -1,0 +1,7 @@
+{
+  "name": "IceCast Test",
+  "type": "icecast",
+  "url": "https://solovievfm.hostingradio.ru/solovievfm256.mp3",
+  "format": "mp3",
+  "metadata": true
+}

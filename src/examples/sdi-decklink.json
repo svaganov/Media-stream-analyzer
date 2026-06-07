@@ -1,0 +1,7 @@
+{
+  "name": "SDI DeckLink",
+  "type": "sdi",
+  "device": "DeckLink Quad 2",
+  "input": 0,
+  "format": "1080p50"
+}

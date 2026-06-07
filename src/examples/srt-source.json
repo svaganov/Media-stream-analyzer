@@ -1,0 +1,14 @@
+{
+  "name": "SRT Test Source",
+  "type": "srt",
+  "mode": "caller",
+  "host": "192.168.1.100",
+  "port": 9000,
+  "latency_ms": 120,
+  "peer_latency_ms": 120,
+  "max_bw_mbps": 0,
+  "encryption": "none",
+  "stream_id": "live/stream",
+  "auto_reconnect": true,
+  "reconnect_delay_sec": 5
+}
