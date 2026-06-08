@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Analyzer — Stream Media Analyzer</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="analyzer-page">
+
+  <!-- Header -->
+  <header class="analyzer-header">
+    <div class="header-left">
+      <a href="index.html" class="back-btn">← Back</a>
+      <div class="header-title">
+        Audio Analyzer
+        <span class="protocol-badge" id="protocol-badge">MP3</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="connection-status">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Connected</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Body -->
+  <div class="analyzer-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <nav class="nav-tabs">
+        <div class="nav-tab active" data-tab="overview">
+          <span class="icon">📊</span> Overview
+        </div>
+        <div class="nav-tab" data-tab="audio">
+          <span class="icon">🎧</span> Audio
+        </div>
+        <div class="nav-tab" data-tab="spectrum">
+          <span class="icon">📈</span> Spectrum
+        </div>
+        <div class="nav-tab" data-tab="history">
+          <span class="icon">🕐</span> History
+        </div>
+        <div class="nav-tab" data-tab="logs">
+          <span class="icon">📝</span> Logs
+        </div>
+      </nav>
+
+      <div class="stream-info">
+        <h3>Stream Info</h3>
+        <div class="info-row">
+          <span class="label">Protocol</span>
+          <span class="value" id="info-protocol">—</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Bitrate</span>
+          <span class="value" id="info-bitrate">—</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Sample Rate</span>
+          <span class="value" id="info-samplerate">48 kHz</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Channels</span>
+          <span class="value" id="info-channels">2 (Stereo)</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Duration</span>
+          <span class="value" id="info-duration">00:00</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Panel -->
+    <main class="center-panel">
+
+      <!-- DBFS Meters -->
+      <section class="panel-section" id="section-dbfs">
+        <h2>DBFS Peak Meter</h2>
+        <div class="meter-stereo">
+          <div class="scale-markers">
+            <span>0</span>
+            <span>-6</span>
+            <span>-12</span>
+            <span>-18</span>
+            <span>-30</span>
+            <span>-50</span>
+            <span>-70</span>
+          </div>
+          <div class="meter-channel">
+            <div class="meter-vertical">
+              <div class="meter-vertical-fill safe" id="dbfs-left" style="height: 0%"></div>
+            </div>
+            <span class="channel-label">L</span>
+          </div>
+          <div class="meter-channel">
+            <div class="meter-vertical">
+              <div class="meter-vertical-fill safe" id="dbfs-right" style="height: 0%"></div>
+            </div>
+            <span class="channel-label">R</span>
+          </div>
+        </div>
+        <div class="meter-label" style="margin-top: 8px">
+          <span>Peak: <span class="meter-value" id="dbfs-peak-value">-70.0</span> dBFS</span>
+          <span>Hold: <span class="meter-value" id="dbfs-hold-value">-70.0</span> dBFS</span>
+        </div>
+      </section>
+
+      <!-- LUFS Meters -->
+      <section class="panel-section" id="section-lufs">
+        <h2>LUFS (EBU R128)</h2>
+        <div class="meter-container">
+          <div class="meter-label">
+            <span>Momentary (400ms)</span>
+            <span class="meter-value" id="lufs-m">-70.0</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill safe" id="lufs-m-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="meter-container">
+          <div class="meter-label">
+            <span>Short-term (3s)</span>
+            <span class="meter-value" id="lufs-s">-70.0</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill safe" id="lufs-s-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="meter-container">
+          <div class="meter-label">
+            <span>Integrated</span>
+            <span class="meter-value" id="lufs-i">-70.0</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill safe" id="lufs-i-bar" style="width: 0%"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- True Peak -->
+      <section class="panel-section" id="section-truepeak">
+        <h2>True Peak</h2>
+        <div class="meter-container">
+          <div class="meter-label">
+            <span>Current</span>
+            <span class="meter-value" id="true-peak">-70.0</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill safe" id="true-peak-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="meter-container">
+          <div class="meter-label">
+            <span>Max</span>
+            <span class="meter-value" id="true-peak-max">-70.0</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill safe" id="true-peak-max-bar" style="width: 0%"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FFT Spectrum -->
+      <section class="panel-section" id="section-spectrum">
+        <h2>FFT Spectrum</h2>
+        <canvas class="chart-canvas" id="spectrum-canvas" width="800" height="200"></canvas>
+      </section>
+
+      <!-- Loudness History -->
+      <section class="panel-section" id="section-history">
+        <h2>Loudness History (60 sec)</h2>
+        <canvas class="chart-canvas" id="history-canvas" width="800" height="200"></canvas>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Audio-specific initialization
+    initAnalyzer({ type: 'audio' });
+  </script>
+
+</body>
+</html>
